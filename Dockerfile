@@ -1,8 +1,7 @@
 # Use an official Ubuntu 22.04 base image that is ARM compatible
 FROM arm64v8/ubuntu:22.04
 
-# Set the maintainer label
-LABEL maintainer="timmarkhuff@gmail.com"
+LABEL maintainer="tim@groundlight.ai"
 
 # Avoid tzdata asking for geographic area and other interactive prompts
 ARG DEBIAN_FRONTEND=noninteractive
