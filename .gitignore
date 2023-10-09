@@ -1,0 +1,36 @@
+# Directories
+build/
+install/
+log/
+src/*/build/
+src/*/install/
+src/*/log/
+
+# IDE files
+.vscode/
+*.code-workspace
+.idea/
+
+# Compiled Python files
+*.pyc
+*.pyo
+*.egg-info/
+
+# Others
+*.swp
+*~
+.DS_Store
+
+# Python environments
+__pycache__/
+*.venv/
+*.venv.bak/
+*.venv.tmp/
+*.venv.old/
+.venv/
+
+# Others
+*.swp
+*~
+.DS_Store
+

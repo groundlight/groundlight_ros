@@ -14,6 +14,7 @@ RUN apt-get update && \
         sudo \
         locales \
         software-properties-common && \
+    # Prepare to install ROS
     locale-gen en_US en_US.UTF-8 && \
     update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 && \
     export LANG=en_US.UTF-8 && \
@@ -23,15 +24,23 @@ RUN apt-get update && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" > /etc/apt/sources.list.d/ros2.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
+    # Install ROS
     ros-humble-desktop && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get update && \
     sudo apt-get install ros-humble-ur -y && \
-    sudo apt update && sudo apt install ros-humble-rmw-cyclonedds-cpp -y && \
+    sudo apt update && sudo apt install ros-humble-rmw-cyclonedds-cpp -y && \ 
+    # Source the ROS environment and add some environment variables for networking
     echo "# ROS stuff" >> ~/.bashrc && \
     echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc && \
     echo "export ROS_DOMAIN_ID=1" >> ~/.bashrc && \
-    echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ~/.bashrc
+    echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ~/.bashrc && \
+    # Install colcon for managing packages and rosdep for dependencies
+    sudo apt update && \
+    sudo apt install python3-colcon-common-extensions -y && \
+    sudo apt install python3-rosdep -y && \
+    sudo rosdep init && \
+    rosdep update
 
 # Use bash as the default shell
 SHELL ["/bin/bash", "-c"]
