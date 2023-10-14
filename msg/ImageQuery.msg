@@ -1,1 +1,0 @@
-string detector_id

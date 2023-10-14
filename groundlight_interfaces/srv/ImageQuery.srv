@@ -1,0 +1,4 @@
+sensor_msgs/Image image
+string detector_id
+---
+string result
