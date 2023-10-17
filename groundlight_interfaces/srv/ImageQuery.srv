@@ -1,4 +1,10 @@
 sensor_msgs/Image image
 string detector_id
+float32 wait
+string human_review
+string inspection_id
 ---
-string result
+string id
+string query
+string label
+float32 confidence

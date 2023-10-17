@@ -1,9 +1,9 @@
-from timeit import default_timer as timer
+import rclpy
+from rclpy.node import Node
+
 import time
 
 from groundlight_interfaces.srv import ImageQuery, GrabFrame
-import rclpy
-from rclpy.node import Node
 
 from sensor_msgs.msg import Image
 
@@ -23,17 +23,23 @@ class SampleGroundlightApp(Node):
             self.get_logger().info('Camera stream service not available, waiting again...')
         self.frame_req = GrabFrame.Request()
 
-    def submit_image_query(self, image: Image, detector_id: str):
+    def submit_image_query(self, 
+                           image: Image, 
+                           detector_id: str = None,
+                           wait: float = 0.00,
+                           human_review: str = 'DEFAULT',
+                           inspection_id: str = '') -> object:
+        """Submits an image query to Groundlight
+        """
         self.req.image = image
         self.req.detector_id = detector_id
+        self.req.wait = wait
+        self.req.human_review = human_review
+        self.req.inspection_id = inspection_id
+
         future = self.iq_client.call_async(self.req)
-        rclpy.spin_until_future_complete(self, future)
-        return future.result()
-    
-    def grab_frame(self) -> Image:
-        future = self.grab_frame_client.call_async(self.frame_req)
-        rclpy.spin_until_future_complete(self, future)
-        return future.result().image
+
+        return future
 
 def main():
     rclpy.init()
@@ -41,13 +47,26 @@ def main():
 
     # submit some image queries
     for _ in range(1):
-        image_msg = sample_groundlight_app.grab_frame()
         sample_groundlight_app.get_logger().info(f'Is the black arrow aligned with the fiducial on the gear?')
         
         detector_id = 'det_2WjC9cOGczrwBWzJE8wPfpDSriG' # gear alignment
-        sample_groundlight_app.get_logger().info(f'Sending request at {timer()}...')
-        response = sample_groundlight_app.submit_image_query(image_msg, detector_id)
-        sample_groundlight_app.get_logger().info(f'Result received! {response.result}')
+
+        futures = []
+        for n in range(3):
+            image_msg = sample_groundlight_app.grab_frame()
+            future = sample_groundlight_app.submit_image_query(image_msg, detector_id)
+            sample_groundlight_app.get_logger().info(f'Sending request {n}...')
+            futures.append(future)
+            time.sleep(10)
+
+        # wait for all the results
+        for future in futures:
+            rclpy.spin_until_future_complete(sample_groundlight_app, future)
+            result = future.result()
+            sample_groundlight_app.get_logger().info(
+                f'Result received! label: {result.label} | confidence: {result.confidence} | '
+                f'id: {result.id} | query {result.query}'
+                )
 
     sample_groundlight_app.destroy_node()
     rclpy.shutdown()

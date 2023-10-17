@@ -21,7 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'server = image_query_handler.image_query_server:main',
-            'client = image_query_handler.client_member_function:main',
+            'client = image_query_handler.sample_groundlight_client:main',
         ],
     },
 )

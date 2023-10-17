@@ -27,7 +27,14 @@ class GroundlightService(Node):
 
         image_query = gl.submit_image_query(detector=request.detector_id, image=cv_image)
 
-        response.result = str(image_query.result)
+        confidence = image_query.result.confidence
+        if confidence is None:
+            confidence = 1.0
+            
+        response.id = image_query.id
+        response.query = image_query.query
+        response.label = image_query.result.label.value
+        response.confidence = confidence
 
         return response
 
