@@ -40,6 +40,12 @@ class SampleGroundlightApp(Node):
         future = self.iq_client.call_async(self.req)
 
         return future
+    
+    def grab_frame(self) -> Image:
+        future = self.grab_frame_client.call_async(self.frame_req)
+        rclpy.spin_until_future_complete(self, future)
+        return future.result().image
+
 
 def main():
     rclpy.init()
@@ -49,7 +55,8 @@ def main():
     for _ in range(1):
         sample_groundlight_app.get_logger().info(f'Is the black arrow aligned with the fiducial on the gear?')
         
-        detector_id = 'det_2WjC9cOGczrwBWzJE8wPfpDSriG' # gear alignment
+        # detector_id = 'det_2WjC9cOGczrwBWzJE8wPfpDSriG' # gear alignment
+        detector_id = 'det_2WgB8XzLLEq89cvPbwep1nhIOTL' # person detector
 
         futures = []
         for n in range(3):
