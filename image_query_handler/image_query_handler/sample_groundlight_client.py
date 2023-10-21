@@ -3,6 +3,10 @@ from rclpy.node import Node
 
 import time
 
+from moveit2 import MoveItCommander
+from moveit2 import roscpp_initialize, roscpp_shutdown
+from geometry_msgs.msg import Pose
+
 from groundlight_interfaces.srv import ImageQuery, GrabFrame
 
 from sensor_msgs.msg import Image
@@ -51,29 +55,31 @@ def main():
     rclpy.init()
     sample_groundlight_app = SampleGroundlightApp()
 
-    # submit some image queries
-    for _ in range(1):
-        sample_groundlight_app.get_logger().info(f'Is the black arrow aligned with the fiducial on the gear?')
-        
-        # detector_id = 'det_2WjC9cOGczrwBWzJE8wPfpDSriG' # gear alignment
-        detector_id = 'det_2WgB8XzLLEq89cvPbwep1nhIOTL' # person detector
+    detector_ids = (
+    'det_2WjC9cOGczrwBWzJE8wPfpDSriG', # gear alignment
+    'det_2WgB8XzLLEq89cvPbwep1nhIOTL' # person detector
+    )
 
-        futures = []
-        for n in range(3):
+    # submit some image queries
+    futures = []
+    for idx, detector_id in enumerate(detector_ids):
+        for _ in range(3):
             image_msg = sample_groundlight_app.grab_frame()
             future = sample_groundlight_app.submit_image_query(image_msg, detector_id)
-            sample_groundlight_app.get_logger().info(f'Sending request {n}...')
+            sample_groundlight_app.get_logger().info(f'Sending request for {detector_id}...')
             futures.append(future)
+
+        if idx + 1 != len(detector_ids):
+            print('Move the robot arm!')
             time.sleep(10)
 
-        # wait for all the results
-        for future in futures:
-            rclpy.spin_until_future_complete(sample_groundlight_app, future)
-            result = future.result()
-            sample_groundlight_app.get_logger().info(
-                f'Result received! label: {result.label} | confidence: {result.confidence} | '
-                f'id: {result.id} | query {result.query}'
-                )
+    # wait for all the results
+    for future in futures:
+        rclpy.spin_until_future_complete(sample_groundlight_app, future)
+        result = future.result()
+        sample_groundlight_app.get_logger().info(
+            f'Result received! label: {result}'
+        )
 
     sample_groundlight_app.destroy_node()
     rclpy.shutdown()

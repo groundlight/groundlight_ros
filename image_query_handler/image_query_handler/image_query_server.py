@@ -6,6 +6,8 @@ from groundlight_interfaces.srv import ImageQuery
 
 from groundlight import Groundlight
 
+from threading import Thread
+
 
 bridge = CvBridge()
 
@@ -18,10 +20,10 @@ class GroundlightService(Node):
         super().__init__('groundlight_service')
         self.srv = self.create_service(ImageQuery, 'image_query', self.submit_image_query)
 
-        self.get_logger().info(f'Connected to Groundlight image query server!')
+        self.get_logger().info(f'Groundlight image query server is online!')
 
     def submit_image_query(self, request, response):
-        self.get_logger().info(f'Incoming request for {request.detector_id}!')
+        self.get_logger().info(f'Incoming request for detector {request.detector_id}!')
 
         cv_image = bridge.imgmsg_to_cv2(request.image, desired_encoding='bgr8')
 
@@ -35,6 +37,8 @@ class GroundlightService(Node):
         response.query = image_query.query
         response.label = image_query.result.label.value
         response.confidence = confidence
+
+        self.get_logger().info(f'Answer received from Groundlight: {response}')
 
         return response
 
