@@ -4,7 +4,7 @@ import cv2
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image, CameraInfo
 
-from groundlight_interfaces.srv import GrabFrame
+from gl_interfaces.srv import GrabFrame
 
 
 class CameraNode(Node):

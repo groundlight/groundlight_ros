@@ -1,0 +1,12 @@
+# Request
+sensor_msgs/Image image
+string detector_id
+float32 wait
+string human_review
+string inspection_id
+---
+# Result
+gl_interfaces/ImageQueryData data
+---
+# Feedback
+gl_interfaces/ImageQueryData data

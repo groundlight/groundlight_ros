@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>image_query_handler</name>
+  <name>gl_image_query</name>
   <version>0.0.1</version>
   <description>Peform natural language image queries with Groundlight</description>
   <maintainer email="tim@groundlight.ai">root</maintainer>

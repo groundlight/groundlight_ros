@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>groundlight_interfaces</name>
+  <name>gl_interfaces</name>
   <version>0.0.1</version>
   <description>Services and messages for interfacing with groundlight_ros</description>
   <maintainer email="tim@groundlight.ai">root</maintainer>
@@ -19,6 +19,7 @@
   <depend>geometry_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>action_msgs</depend>
 
   <buildtool_depend>rosidl_default_generators</buildtool_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>

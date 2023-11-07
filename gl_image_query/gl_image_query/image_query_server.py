@@ -2,19 +2,15 @@ import rclpy
 from rclpy.node import Node
 from cv_bridge import CvBridge
 
-from groundlight_interfaces.srv import ImageQuery
+from gl_interfaces.srv import ImageQuery
 
 from groundlight import Groundlight
 
-from threading import Thread
-
-
 bridge = CvBridge()
 
-# Connect to Groundlight
-gl = Groundlight()
+gl = Groundlight() # Connect to Groundlight
 
-class GroundlightService(Node):
+class ImageQueryServer(Node):
 
     def __init__(self):
         super().__init__('groundlight_service')
@@ -45,13 +41,12 @@ class GroundlightService(Node):
 def main():
     rclpy.init()
 
-    minimal_service = GroundlightService()
+    image_query_server = ImageQueryServer()
 
     while rclpy.ok():
-        rclpy.spin(minimal_service)
+        rclpy.spin(image_query_server)
 
     rclpy.shutdown()
-
 
 if __name__ == '__main__':
     main()

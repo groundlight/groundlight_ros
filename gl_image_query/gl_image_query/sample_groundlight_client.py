@@ -3,11 +3,11 @@ from rclpy.node import Node
 
 import time
 
-from moveit2 import MoveItCommander
-from moveit2 import roscpp_initialize, roscpp_shutdown
+# from moveit2 import MoveItCommander
+# from moveit2 import roscpp_initialize, roscpp_shutdown
 from geometry_msgs.msg import Pose
 
-from groundlight_interfaces.srv import ImageQuery, GrabFrame
+from gl_interfaces.srv import ImageQuery, GrabFrame
 
 from sensor_msgs.msg import Image
 
