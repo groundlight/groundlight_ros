@@ -4,7 +4,7 @@ package_name = 'gl_image_query'
 
 setup(
     name=package_name,
-    version='0.0.0',
+    version='0.0.1',
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -16,7 +16,7 @@ setup(
     maintainer='Tim Huff',
     maintainer_email='tim@groundlight.ai',
     description='Peform natural language image queries with Groundlight',
-    license='TODO: License declaration',
+    license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [

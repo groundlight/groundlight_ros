@@ -1,10 +1,10 @@
 from setuptools import find_packages, setup
 
-package_name = 'sample_camera'
+package_name = 'gl_kinova'
 
 setup(
     name=package_name,
-    version='0.0.0',
+    version='0.0.1',
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -15,13 +15,12 @@ setup(
     zip_safe=True,
     maintainer='Tim Huff',
     maintainer_email='tim@groundlight.ai',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='Sample application using Groundlight with a Kinova arm',
+    license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'camera_node = sample_camera.camera_node:main',
-            'frame_grabber = sample_camera.frame_grabber:main',
+            'demo = gl_kinova.kinova_demo:main',
         ],
     },
 )

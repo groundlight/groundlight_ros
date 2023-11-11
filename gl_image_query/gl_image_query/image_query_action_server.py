@@ -23,7 +23,7 @@ class IQActionServer(Node):
         self._action_server = ActionServer(
             self,
             ImageQuery,
-            'image_query',
+            '/groundlight/image_query',
             self.execute_callback)
         
         # Publish the feedback and result on separate topics so that other nodes can subscribe
