@@ -94,7 +94,7 @@ class IQActionServer(Node):
         request_msg.image = goal_handle.request.image
         self.request_pub.publish(request_msg) 
 
-        # Initilize feedback message and action feedback
+        # Initialize feedback message and action feedback
         action_feedback = ImageQuery.Feedback()
         action_feedback.header = goal_handle.request.header
         action_feedback.params = params
