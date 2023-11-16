@@ -20,9 +20,9 @@ To use Groundlight ROS, you must be authenticated with Groundlight. If you don't
 
 Next, you need to obtain an API token. Log into your Groundlight account, go to the [Api Tokens](https://app.groundlight.ai/reef/my-account/api-tokens) page and generate a token. You can read [more about API tokens](https://code.groundlight.ai/python-sdk/docs/getting-started/api-tokens) on our site.
 
-On the system where you are running ROS, run: `echo 'export GROUNDLIGHT_API_TOKEN="<YOUR API TOKEN>"' >> ~/.bashrc && source ~/.bashrc`.
+On the system where you are running ROS, run: `export GROUNDLIGHT_API_TOKEN="<YOUR API TOKEN>"`.
 
-Some users prefer to put the token into their bashrc file so that it is always ready to be used. To do this, run: `echo 'export GROUNDLIGHT_API_TOKEN="<YOUR API TOKEN>"' >> ~/.bashrc`.
+Some users prefer to put the token into their bashrc file so that it is always ready to be used. To do this, run: `echo 'export GROUNDLIGHT_API_TOKEN="<YOUR API TOKEN>"' >> ~/.bashrc && source ~/.bashrc`.
 
 ## Usage
 This library assumes that your robot already has a topic where camera frames are been published frequently and that the messages are of type `sensor_msgs/msg/Image`. If this is not case, you may need to create node to publish to such a topic.
