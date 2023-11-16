@@ -33,7 +33,8 @@ class KinovaDemo(Node):
                     name: str = '', 
                     patience_time: float = 0.0,
                     confidence_threshold: float = 0.0,
-                    human_review: str = 'DEFAULT'):
+                    human_review: str = 'DEFAULT',
+                    wait_for_answer: bool = True):
         
         header = Header()
         clock = rclpy.clock.Clock()
@@ -52,8 +53,16 @@ class KinovaDemo(Node):
         goal_msg.image = image
 
         self._action_client.wait_for_server(timeout_sec=1.0)
+
+        # async
         self._send_goal_future = self._action_client.send_goal_async(goal_msg, feedback_callback=self.feedback_callback)
         self._send_goal_future.add_done_callback(self.goal_response_callback)
+
+        # # sync TODO add support for blocking calls
+        # self.get_logger().info('Waiting...')
+        # ret = self._action_client._get_result(self._send_goal_future)
+        # self.get_logger().info('Done!')
+        # self.get_logger().info(ret)
 
 
     def move_joints(self, points: list, time_from_start: int = 5):
@@ -95,6 +104,13 @@ def main(args=None):
     rclpy.init(args=args)
     node = KinovaDemo()
 
+    image_query_params = {
+        'query': 'Is there a gear in the minecart?',
+        'name': 'Gear in Mine Cart',
+        'human_review': 'NEVER',
+        'patience_time': 10.0,
+    }
+
     home_joints = [
         -0.5182688752753835,
         1.965048650914085,
@@ -118,9 +134,7 @@ def main(args=None):
     node.move_joints(joints)
     time.sleep(1)
     image = node.grab_frame()
-    detector_id = 'det_2Y82BZzgUu3hGWKeDPQ9xX579N8' # gear in minecart
-    human_review = 'NEVER'
-    node.send_goal(image, detector_id, human_review=human_review)
+    node.send_goal(image, **image_query_params)
 
     joints = [
         -1.8795565311459212,
@@ -134,9 +148,7 @@ def main(args=None):
     node.move_joints(joints)
     time.sleep(1)
     image = node.grab_frame()
-    detector_id = 'det_2Y82BZzgUu3hGWKeDPQ9xX579N8' # gear in minecart
-    human_review = 'NEVER'
-    node.send_goal(image, detector_id, human_review=human_review)
+    node.send_goal(image, **image_query_params)
 
     joints = [
         -0.5988280584448054,
@@ -150,9 +162,7 @@ def main(args=None):
     node.move_joints(joints)
     time.sleep(1)
     image = node.grab_frame()
-    detector_id = 'det_2Y82BZzgUu3hGWKeDPQ9xX579N8' # gear in minecart
-    human_review = 'NEVER'
-    node.send_goal(image, detector_id, human_review=human_review)
+    node.send_goal(image, **image_query_params)
 
     node.move_joints(home_joints)
 

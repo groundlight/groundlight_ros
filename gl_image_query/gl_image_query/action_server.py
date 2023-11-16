@@ -1,24 +1,30 @@
-import time
-
 import rclpy
 from rclpy.action import ActionServer
 from rclpy.node import Node
 from cv_bridge import CvBridge
 
 from gl_interfaces.action import ImageQuery
-from gl_interfaces.msg import ImageQueryRequest, ImageQueryFeedback, ImageQueryResult
+from gl_interfaces.msg import ImageQueryRequest, ImageQueryFeedback, ImageQueryResult, ImageQueryParams, ImageQueryResponse
 
 from groundlight import Groundlight
+
+import time
 
 bridge = CvBridge()
 
 gl = Groundlight() # Connect to Groundlight
 
-TIMEOUT_SEC = 120 
-POLLING_PERIOD_SEC = .25
+POLLING_PERIOD_SEC = .1
 
 class IQActionServer(Node):
     def __init__(self):
+        """
+        A ROS 2 Action Server that wraps the Groundlight image query functionality.
+
+        The Action Server is called by an Action Client. The client can either wait for the server to return a result or move on immediately.
+
+        Incoming requests, feedback and results are republished on separate topics so that other nodes can subscribe.
+        """
         super().__init__('groundlight')
         self._action_server = ActionServer(
             self,
@@ -67,46 +73,37 @@ class IQActionServer(Node):
                           human_review=human_review)
         self.get_logger().info(f'Processing image query {iq.query}...')
 
-        # Republish request message
+        params = ImageQueryParams()
+        params.detector_id = det.id
+        params.query = det.query
+        params.name = det.name
+        params.patience_time = patience_time
+        params.confidence_threshold = confidence_threshold
+        params.human_review = human_review
+
+        response = ImageQueryResponse()
+        response.image_query_id = iq.id
+        response.confidence = 0.5
+        response.label = 'UNSURE'
+
+        # Announce that an image query has been submitted
         request_msg = ImageQueryRequest()
         request_msg.header = goal_handle.request.header
-        request_msg.params.detector_id = det.id
-        request_msg.params.query = det.query
-        request_msg.params.name = det.name
-        request_msg.params.patience_time = patience_time
-        request_msg.params.confidence_threshold = confidence_threshold
-        request_msg.params.human_review = human_review
-        request_msg.response.image_query_id = iq.id
-        request_msg.response.confidence = 0.5
-        request_msg.response.label = 'UNSURE'
+        request_msg.params = params
+        request_msg.response = response
         request_msg.image = goal_handle.request.image
-        self.request_pub.publish(request_msg)
+        self.request_pub.publish(request_msg) 
 
-        # Initialize action feedback
+        # Initilize feedback message and action feedback
         action_feedback = ImageQuery.Feedback()
         action_feedback.header = goal_handle.request.header
-        action_feedback.params.detector_id = det.id
-        action_feedback.params.query = det.query
-        action_feedback.params.name = det.name
-        action_feedback.params.patience_time = patience_time
-        action_feedback.params.confidence_threshold = confidence_threshold
-        action_feedback.params.human_review = human_review
-        action_feedback.response.image_query_id = iq.id
-        action_feedback.response.confidence = 0.5
-        action_feedback.response.label = 'UNSURE'
+        action_feedback.params = params
+        action_feedback.response = response
 
-        # Initialize feedback message
         feedback_msg = ImageQueryFeedback()
         feedback_msg.header = goal_handle.request.header
-        feedback_msg.params.detector_id = det.id
-        feedback_msg.params.query = det.query
-        feedback_msg.params.name = det.name
-        feedback_msg.params.patience_time = patience_time
-        feedback_msg.params.confidence_threshold = confidence_threshold
-        feedback_msg.params.human_review = human_review
-        feedback_msg.response.image_query_id = iq.id
-        feedback_msg.response.confidence = 0.5
-        feedback_msg.response.label = 'UNSURE'
+        feedback_msg.params = params
+        feedback_msg.response = response
 
         # Poll image query until answer is final
         time_waited_sec = 0.0
@@ -116,14 +113,17 @@ class IQActionServer(Node):
             confidence = 1.0 if iq.result.confidence is None else iq.result.confidence
             label = iq.result.label.value
 
-            # Publish feedback
-            self.get_logger().info(f'Feedback: confidence={confidence} label={label}')
-            action_feedback.response.confidence = confidence
-            action_feedback.response.label = label
+            # Update the response 
+            response.confidence = confidence
+            response.label = label
+
+            # Publish action feedback
+            self.get_logger().info(f'Feedback: {self.image_query_to_string(iq)}')
+            action_feedback.response = response
             goal_handle.publish_feedback(action_feedback)
 
-            feedback_msg.response.confidence = confidence
-            feedback_msg.response.label = label
+            # Publish feedback message
+            feedback_msg.response = response
             self.feedback_pub.publish(feedback_msg)
 
             # Check if answer is final
@@ -135,38 +135,30 @@ class IQActionServer(Node):
                 goal_handle.succeed()
                 result = ImageQuery.Result()
                 result.header = goal_handle.request.header
-                result.params.detector_id = det.id
-                result.params.query = det.query
-                result.params.name = det.name
-                result.params.patience_time = patience_time
-                result.params.confidence_threshold = confidence_threshold
-                result.params.human_review = human_review
+                result.params = params
                 result.response.image_query_id = iq.id
                 result.response.confidence = confidence
                 result.response.label = label
                 result.image = goal_handle.request.image
-                self.get_logger().info(f'Result: confidence={confidence} label={label}')
+                self.get_logger().info(f'Result: {self.image_query_to_string(iq)}')
                 break
-            
-            time.sleep(POLLING_PERIOD_SEC)
-            time_waited_sec += POLLING_PERIOD_SEC
+            else:
+                time.sleep(POLLING_PERIOD_SEC)
+                time_waited_sec += POLLING_PERIOD_SEC
         
-        # Publish result message
+        # Polling has concluded, time to publish the final result message
         result_msg = ImageQueryResult()
         result_msg.header = goal_handle.request.header
-        result_msg.params.detector_id = det.id
-        result_msg.params.query = det.query
-        result_msg.params.name = det.name
-        result_msg.params.patience_time = patience_time
-        result_msg.params.confidence_threshold = confidence_threshold
-        result_msg.params.human_review = human_review
-        result_msg.response.image_query_id = iq.id
-        result_msg.response.confidence = confidence
-        result_msg.response.label = label
+        result_msg.params = params
+        result_msg.response = response
         result_msg.image = goal_handle.request.image
         self.result_pub.publish(result_msg)
 
+        # Return the result to the action client
         return result
+    
+    def image_query_to_string(self, iq: ImageQuery) -> str:
+        return f'{iq.id} label={iq.result.label.value} confidence={iq.result.confidence}'
 
 def main(args=None):
     rclpy.init(args=args)
