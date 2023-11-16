@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>gl_markers</name>
+  <version>0.0.1</version>
+  <description>Publishes arrow markers to RViz to indicate the poses from which image queries are being submitted.</description>
+  <maintainer email="tim@groundlight.ai">Tim Huff</maintainer>
+  <license>MIT</license>
+
+  <depend>rclpy</depend>
+  <depend>example_interfaces</depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+
+</package>

@@ -1,0 +1,3 @@
+string image_query_id
+float32 confidence
+string label

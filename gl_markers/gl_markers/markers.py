@@ -1,29 +1,21 @@
 import rclpy
 from rclpy.node import Node
+from tf2_ros import Buffer, TransformListener
+from geometry_msgs.msg import PoseStamped, TransformStamped, Point
+
+from gl_interfaces.msg import ImageQueryData
 
 from visualization_msgs.msg import Marker
 from builtin_interfaces.msg import Duration
 
-from geometry_msgs.msg import PoseStamped
-
-from gl_interfaces.msg import ImageQueryData
-
-class ImageQueryVisualizer(Node):
+class EndEffectorPoseNode(Node):
     def __init__(self):
-        super().__init__('image_query_visualizer')
-
-        self.marker_publisher = self.create_publisher(Marker, 'visualization_marker', 10)
-
-        # Pose subscripton
-        self.pose_subscription = self.create_subscription(
-            PoseStamped,
-            'end_effector_pose',
-            self.pose_callback,
-            10
-        )
-
-        self.pose_subscription  # prevent unused variable warning
-        self.pose = PoseStamped()
+        super().__init__('groundlight_markers')
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
+        
+        self.declare_parameter('camera_link', 'camera_link')
+        self.camera_link = self.get_parameter('camera_link').get_parameter_value().string_value
 
         # Feedback subscription
         self.iq_feedback_subscription = self.create_subscription(
@@ -46,10 +38,7 @@ class ImageQueryVisualizer(Node):
         self.tracked_image_queries = {}
         self.iq_id_counter = 0
 
-        self.get_logger().info('Groundlight image query visualizer node started!')
-
-    def pose_callback(self, msg: PoseStamped):
-        self.pose = msg
+        self.get_logger().info('Groundlight marker node has been started.')
 
     def feedback_callback(self, msg: ImageQueryData):
 
@@ -116,9 +105,16 @@ class ImageQueryVisualizer(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    image_query_visualizer = ImageQueryVisualizer()
-    rclpy.spin(image_query_visualizer)
-    rclpy.shutdown()
+    node = EndEffectorPoseNode()
+    try:
+        while rclpy.ok():
+            rclpy.spin_once(node)
+            node.get_end_effector_pose()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

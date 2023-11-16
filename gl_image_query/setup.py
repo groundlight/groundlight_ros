@@ -20,9 +20,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'server = gl_image_query.image_query_server:main',
-            'action_server = gl_image_query.image_query_action_server:main',
-            'client = gl_image_query.sample_groundlight_client:main',
+            # 'server = gl_image_query.image_query_server:main',
+            'action_server = gl_image_query.action_server:main',
+            # 'client = gl_image_query.sample_groundlight_client:main',
         ],
     },
 )

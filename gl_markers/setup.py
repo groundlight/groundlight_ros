@@ -1,8 +1,6 @@
 from setuptools import find_packages, setup
-import os
-import glob
 
-package_name = 'gl_kinova'
+package_name = 'gl_markers'
 
 setup(
     name=package_name,
@@ -12,18 +10,17 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        (os.path.join('share', package_name, 'launch'), glob.glob('launch/*.launch.py'))
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='Tim Huff',
     maintainer_email='tim@groundlight.ai',
-    description='Sample application using Groundlight with a Kinova arm',
+    description='Publishes arrow markers to RViz to indicate the poses from which image queries are being submitted.',
     license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'demo = gl_kinova.kinova_demo:main',
+            'framegrab = gl_framegrab.framegrab:main',
         ],
     },
 )

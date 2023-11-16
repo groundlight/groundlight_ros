@@ -24,8 +24,12 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/ImageQuery.srv"
   "srv/GrabFrame.srv"
+  "msg/ImageQueryParams.msg"
+  "msg/ImageQueryResponse.msg"
+  "msg/ImageQueryRequest.msg"
+  "msg/ImageQueryFeedback.msg"
+  "msg/ImageQueryResult.msg"
   "action/ImageQuery.action"
-  "msg/ImageQueryData.msg"
   DEPENDENCIES geometry_msgs sensor_msgs
 )
 
