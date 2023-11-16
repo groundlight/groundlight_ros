@@ -136,9 +136,7 @@ class IQActionServer(Node):
                 result = ImageQuery.Result()
                 result.header = goal_handle.request.header
                 result.params = params
-                result.response.image_query_id = iq.id
-                result.response.confidence = confidence
-                result.response.label = label
+                result.response = response
                 result.image = goal_handle.request.image
                 self.get_logger().info(f'Result: {self.image_query_to_string(iq)}')
                 break
