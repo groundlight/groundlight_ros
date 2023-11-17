@@ -11,7 +11,7 @@ from gl_interfaces.msg import ImageQueryRequest, ImageQueryFeedback, ImageQueryR
 
 import time
 
-NON_FINAL_TRANSPARENCY = 0.2
+NON_FINAL_TRANSPARENCY = 0.1
 FINAL_TRANSPARENCY = 1.0
 
 class ImageQueryRVizMarkers(Node):
@@ -104,7 +104,9 @@ class ImageQueryRVizMarkers(Node):
             return # Got a callback for a marker that we aren't tracking
 
         # Determine marker color
-        if msg.response.label == 'YES':
+        if msg.response.confidence < msg.params.confidence_threshold:
+            color = (1.0, 1.0, 0.0, FINAL_TRANSPARENCY)
+        elif msg.response.label == 'YES':
             color = (0.0, 1.0, 0.0, FINAL_TRANSPARENCY)
         elif msg.response.label == 'NO':
             color = (1.0, 0.0, 0.0, FINAL_TRANSPARENCY)

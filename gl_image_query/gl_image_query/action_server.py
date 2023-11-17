@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.action import ActionServer
 from rclpy.node import Node
+from rclpy.executors import MultiThreadedExecutor
 from cv_bridge import CvBridge
 
 from gl_interfaces.action import ImageQuery
@@ -165,7 +166,16 @@ class IQActionServer(Node):
 def main(args=None):
     rclpy.init(args=args)
     iq_action_server = IQActionServer()
-    rclpy.spin(iq_action_server)
+    # rclpy.spin(iq_action_server)
+
+    executor = MultiThreadedExecutor()
+    executor.add_node(iq_action_server)
+
+    try:
+        executor.spin()
+    finally:
+        iq_action_server.destroy()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

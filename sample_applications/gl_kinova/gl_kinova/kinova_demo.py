@@ -104,7 +104,7 @@ def main(args=None):
         'query': 'Is there a gear in the minecart?',
         'name': 'Gear in Mine Cart',
         'human_review': 'NEVER',
-        'patience_time': 10.0,
+        'patience_time': 60.0,
     }
 
     home_joints = [
