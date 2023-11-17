@@ -8,6 +8,7 @@ from gl_interfaces.msg import ImageQueryRequest, ImageQueryFeedback, ImageQueryR
 
 from groundlight import Groundlight
 
+from typing import Union
 import time
 
 bridge = CvBridge()
@@ -118,7 +119,7 @@ class IQActionServer(Node):
             response.label = label
 
             # Publish action feedback
-            self.get_logger().info(f'Feedback: {self.image_query_to_string(iq)}')
+            self.get_logger().info(f'Feedback: {self.iq_msg_to_str(action_feedback)}')
             action_feedback.response = response
             goal_handle.publish_feedback(action_feedback)
 
@@ -138,7 +139,7 @@ class IQActionServer(Node):
                 result.params = params
                 result.response = response
                 result.image = goal_handle.request.image
-                self.get_logger().info(f'Result: {self.image_query_to_string(iq)}')
+                self.get_logger().info(f'Result: {self.iq_msg_to_str(result)}')
                 break
             else:
                 time.sleep(POLLING_PERIOD_SEC)
@@ -155,8 +156,11 @@ class IQActionServer(Node):
         # Return the result to the action client
         return result
     
-    def image_query_to_string(self, iq: ImageQuery) -> str:
-        return f'{iq.id} label={iq.result.label.value} confidence={iq.result.confidence}'
+    def iq_msg_to_str(self, msg: Union[ImageQueryRequest, ImageQueryFeedback, ImageQueryResult]) -> str:
+        return (
+            f'{msg.response.image_query_id} label={msg.response.label} '
+            f'confidence={msg.response.confidence:.4f} confidence_threshold={msg.params.confidence_threshold:.4f} '
+        )
 
 def main(args=None):
     rclpy.init(args=args)

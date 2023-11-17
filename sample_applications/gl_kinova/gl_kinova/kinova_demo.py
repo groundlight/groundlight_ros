@@ -33,8 +33,7 @@ class KinovaDemo(Node):
                     name: str = '', 
                     patience_time: float = 0.0,
                     confidence_threshold: float = 0.0,
-                    human_review: str = 'DEFAULT',
-                    wait_for_answer: bool = True):
+                    human_review: str = 'DEFAULT'):
         
         header = Header()
         clock = rclpy.clock.Clock()
@@ -54,16 +53,8 @@ class KinovaDemo(Node):
 
         self._action_client.wait_for_server(timeout_sec=1.0)
 
-        # async
         self._send_goal_future = self._action_client.send_goal_async(goal_msg, feedback_callback=self.feedback_callback)
         self._send_goal_future.add_done_callback(self.goal_response_callback)
-
-        # # sync TODO add support for blocking calls
-        # self.get_logger().info('Waiting...')
-        # ret = self._action_client._get_result(self._send_goal_future)
-        # self.get_logger().info('Done!')
-        # self.get_logger().info(ret)
-
 
     def move_joints(self, points: list, time_from_start: int = 5):
         msg = JointTrajectory()
@@ -75,30 +66,35 @@ class KinovaDemo(Node):
         self.joint_trajectory_pub.publish(msg)
         time.sleep(time_from_start)
 
-
     def goal_response_callback(self, future):
         goal_handle = future.result()
         if not goal_handle.accepted:
             self.get_logger().info('Goal rejected.')
             return
-
-        self.get_logger().info('Goal accepted.')
+        else:
+            self.get_logger().info('Goal accepted.')
 
         self._get_result_future = goal_handle.get_result_async()
         self._get_result_future.add_done_callback(self.get_result_callback)
 
     def get_result_callback(self, future):
         result = future.result().result
-        self.get_logger().info(f'Result: confidence={result.response.confidence} label={result.response.label}')
+        self.get_logger().info(f'Result: {self.iq_msg_to_str(result)}')
 
     def feedback_callback(self, feedback_msg):
         feedback = feedback_msg.feedback
-        self.get_logger().info(f'Feedback: confidence={feedback.response.confidence} label={feedback.response.label}')
+        self.get_logger().info(f'Feedback: {self.iq_msg_to_str(feedback)}')
 
     def grab_frame(self) -> Image:
         future = self.grab_frame_client.call_async(self.frame_req)
         rclpy.spin_until_future_complete(self, future)
         return future.result().image
+    
+    def iq_msg_to_str(self, msg: ImageQuery) -> str:
+        return (
+            f'{msg.response.image_query_id} label={msg.response.label} '
+            f'confidence={msg.response.confidence:.4f} confidence_threshold={msg.params.confidence_threshold:.4f} '
+        )
 
 def main(args=None):
     rclpy.init(args=args)
