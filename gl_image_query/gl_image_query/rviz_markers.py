@@ -11,7 +11,7 @@ from gl_interfaces.msg import ImageQueryRequest, ImageQueryFeedback, ImageQueryR
 
 import time
 
-NON_FINAL_TRANSPARENCY = 0.1
+NON_FINAL_TRANSPARENCY = 0.25
 FINAL_TRANSPARENCY = 1.0
 
 class ImageQueryRVizMarkers(Node):
