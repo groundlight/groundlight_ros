@@ -25,7 +25,7 @@ On the system where you are running ROS, run: `export GROUNDLIGHT_API_TOKEN="<YO
 Some users prefer to put the token into their bashrc file so that it is always ready to be used. To do this, run: `echo 'export GROUNDLIGHT_API_TOKEN="<YOUR API TOKEN>"' >> ~/.bashrc && source ~/.bashrc`.
 
 ## Usage
-This library assumes that your robot already has a topic where camera frames are published frequently and that the messages are of type `sensor_msgs/Image`. If this is not case, you may need to create node to publish to such a topic.
+This library assumes that your robot already has a topic where camera frames are published frequently and that the messages are of type `sensor_msgs/Image`. If this is not case, you may need to create a node to publish to such a topic.
 
 Make note of the topic where your robot is publishing camera frames. If you are unsure, start up your robot and run: `ros2 topic list`. Browse the topics and find the one that seems right. Verify the type by running `ros2 topic type <topic_name>`.
 
