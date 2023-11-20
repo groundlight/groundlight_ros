@@ -5,7 +5,7 @@
   <version>0.0.1</version>
   <description>Sample application using Groundlight with a Kinova arm</description>
   <maintainer email="tim@groundlight.ai">Tim Huff</maintainer>
-  <license>TODO: License declaration</license>
+  <license>MIT</license>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

@@ -5,7 +5,7 @@
   <version>0.0.1</version>
   <description>Services and messages for interfacing with groundlight_ros</description>
   <maintainer email="tim@groundlight.ai">root</maintainer>
-  <license>TODO: License declaration</license>
+  <license>MIT/license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
