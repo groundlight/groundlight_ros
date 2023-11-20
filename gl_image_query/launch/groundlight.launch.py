@@ -16,6 +16,7 @@ def generate_launch_description():
         package='gl_camera',
         executable='camera_server',
         name='camera_server',
+        namespace='groundlight',
         parameters=[{'camera_topic': camera_topic}],
     )
 
@@ -23,12 +24,14 @@ def generate_launch_description():
         package='gl_image_query',
         executable='action_server',
         name='action_server',
+        namespace='groundlight',
     )
 
     node3 = Node(
         package='gl_image_query',
         executable='rviz_markers',
         name='rviz_markers',
+        namespace='groundlight',
     )
 
     return LaunchDescription([

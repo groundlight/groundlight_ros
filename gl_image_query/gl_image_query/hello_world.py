@@ -11,7 +11,7 @@ from gl_interfaces.srv import GrabFrame
 
 class HelloWorld(Node):
     def __init__(self):
-        super().__init__('hello_world_groundlight')
+        super().__init__('hello_world', namespace='groundlight')
         self._action_client = ActionClient(self, ImageQuery, '/groundlight/image_query')
 
         self.grab_frame_client = self.create_client(GrabFrame, '/groundlight/grab_frame')

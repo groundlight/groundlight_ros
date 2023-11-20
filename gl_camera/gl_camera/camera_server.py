@@ -6,7 +6,7 @@ from gl_interfaces.srv import GrabFrame
 
 class CameraService(Node):
     def __init__(self):
-        super().__init__('gl_camera_server')
+        super().__init__('camera_server', namespace='groundlight')
 
         self.declare_parameter('camera_topic', '')
         self.camera_topic = self.get_parameter('camera_topic').get_parameter_value().string_value
@@ -28,7 +28,7 @@ class CameraService(Node):
             self.image_callback,
             10)
 
-        self.srv = self.create_service(GrabFrame, 'groundlight/grab_frame', self.grab_frame)
+        self.srv = self.create_service(GrabFrame, '/groundlight/grab_frame', self.grab_frame)
 
         self.image_msg = None
 
