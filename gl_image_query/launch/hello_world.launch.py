@@ -31,9 +31,16 @@ def generate_launch_description():
         name='rviz_markers',
     )
 
+    node4 = Node(
+        package='gl_image_query',
+        executable='hello_world',
+        name='hello_world',
+    )
+
     return LaunchDescription([
         camera_topic_arg,
         node1,
         node2,
         node3,
+        node4,
     ])

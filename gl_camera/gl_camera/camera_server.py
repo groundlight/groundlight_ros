@@ -4,16 +4,16 @@ from sensor_msgs.msg import Image
 
 from gl_interfaces.srv import GrabFrame
 
-class FrameGrabber(Node):
+class CameraService(Node):
     def __init__(self):
-        super().__init__('gl_framegrab')
+        super().__init__('gl_camera_server')
 
         self.declare_parameter('camera_topic', '')
         self.camera_topic = self.get_parameter('camera_topic').get_parameter_value().string_value
 
         if not self.camera_topic:
             self.get_logger().warning(
-                "Groundlight's Framegrab service will not launch because no camera topic was provided." 
+                "Groundlight's camera service will not launch because no camera topic was provided." 
                 "If you plan to provide your own images, you can disregard this warning. Otherwise, "
                 "please provide a camera_topic argument."
                 )
@@ -27,7 +27,6 @@ class FrameGrabber(Node):
             self.camera_topic,
             self.image_callback,
             10)
-        self.subscription  # prevent unused variable warning
 
         self.srv = self.create_service(GrabFrame, 'groundlight/grab_frame', self.grab_frame)
 
@@ -52,7 +51,7 @@ class FrameGrabber(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = FrameGrabber()
+    node = CameraService()
     rclpy.spin(node)
     rclpy.shutdown()
 

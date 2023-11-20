@@ -16,6 +16,9 @@ FINAL_TRANSPARENCY = 1.0
 
 class ImageQueryRVizMarkers(Node):
     def __init__(self):
+        """
+        Spawns RViz arrow markers for each image query that is received. Subscribes to feedback and result topics to update the markers.
+        """
         super().__init__('groundlight_markers')
 
         self.marker_publisher = self.create_publisher(Marker, '/groundlight/markers', 10)
@@ -41,8 +44,6 @@ class ImageQueryRVizMarkers(Node):
             10
         )
 
-        time.sleep(2) # wait for the publisher to be ready
-
         self.iq_markers = {}
         self.marker_counter = 0
 
@@ -51,7 +52,7 @@ class ImageQueryRVizMarkers(Node):
 
         # Delete any existing markers in RViz to start with a blank slate
         marker = Marker()
-        marker.header.frame_id = 'base_link' # This seems to be required for the deleteall action to work
+        marker.header.frame_id = 'base_link' # This seems to be required for the DELETEALL action to work
         marker.action = Marker.DELETEALL
         self.marker_publisher.publish(marker)
 
@@ -85,7 +86,7 @@ class ImageQueryRVizMarkers(Node):
         iq_id = msg.response.image_query_id
         marker = self.iq_markers.get(iq_id)
         if marker is None:
-            return # Got a callback for a marker that we aren't tracking
+            return # Got a callback for a marker we aren't tracking
 
         # Determine marker color
         if msg.response.label == 'YES':
@@ -101,7 +102,7 @@ class ImageQueryRVizMarkers(Node):
         iq_id = msg.response.image_query_id
         marker = self.iq_markers.get(iq_id)
         if marker is None:
-            return # Got a callback for a marker that we aren't tracking
+            return # Got a callback for a marker we aren't tracking
 
         # Determine marker color
         if msg.response.confidence < msg.params.confidence_threshold:
@@ -118,7 +119,6 @@ class ImageQueryRVizMarkers(Node):
     def publish_marker(self, marker: Marker, color: tuple) -> None:
         # marker.header.stamp = self.get_clock().now().to_msg()
         
-
         marker.color.r = color[0]
         marker.color.g = color[1]
         marker.color.b = color[2]

@@ -5,8 +5,6 @@ from rclpy.action import ActionClient
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from std_msgs.msg import Header
-from builtin_interfaces.msg import Time, Duration
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from sensor_msgs.msg import JointState
 from std_msgs.msg import String
 

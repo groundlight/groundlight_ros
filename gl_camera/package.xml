@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>gl_framegrab</name>
+  <name>gl_camera</name>
   <version>0.0.1</version>
   <description>Provides a services to grab frames from existing ROS camera streams</description>
   <maintainer email="tim@groundlight.ai">Tim Huff</maintainer>

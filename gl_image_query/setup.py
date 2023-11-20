@@ -1,4 +1,6 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
 package_name = 'gl_image_query'
 
@@ -10,19 +12,20 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name), glob('launch/*.launch.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='Tim Huff',
     maintainer_email='tim@groundlight.ai',
-    description='Peform natural language image queries with Groundlight',
+    description='Perform natural language image queries with Groundlight',
     license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            # 'server = gl_image_query.image_query_server:main',
             'action_server = gl_image_query.action_server:main',
-            # 'client = gl_image_query.sample_groundlight_client:main',
+            'rviz_markers = gl_image_query.rviz_markers:main',
+            'hello_world = gl_image_query.hello_world:main',
         ],
     },
 )

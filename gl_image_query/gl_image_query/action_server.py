@@ -73,7 +73,7 @@ class IQActionServer(Node):
                           patience_time=patience_time,
                           confidence_threshold=confidence_threshold,
                           human_review=human_review)
-        self.get_logger().info(f'Processing image query {iq.query}...')
+        self.get_logger().info(f'Processing image query: {iq.query}')
 
         params = ImageQueryParams()
         params.detector_id = det.id
@@ -120,7 +120,7 @@ class IQActionServer(Node):
             response.label = label
 
             # Publish action feedback
-            self.get_logger().info(f'Feedback: {self.iq_msg_to_str(action_feedback)}')
+            self.get_logger().debug(f'Feedback: {self.iq_msg_to_str(action_feedback)}')
             action_feedback.response = response
             goal_handle.publish_feedback(action_feedback)
 
@@ -166,7 +166,6 @@ class IQActionServer(Node):
 def main(args=None):
     rclpy.init(args=args)
     iq_action_server = IQActionServer()
-    # rclpy.spin(iq_action_server)
 
     executor = MultiThreadedExecutor()
     executor.add_node(iq_action_server)
@@ -174,7 +173,6 @@ def main(args=None):
     try:
         executor.spin()
     finally:
-        iq_action_server.destroy()
         rclpy.shutdown()
 
 if __name__ == '__main__':

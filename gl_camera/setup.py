@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'gl_framegrab'
+package_name = 'gl_camera'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'framegrab = gl_framegrab.framegrab:main',
+            'camera_server = gl_camera.camera_server:main',
         ],
     },
 )
