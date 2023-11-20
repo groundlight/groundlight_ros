@@ -3,7 +3,7 @@
 <package format="3">
   <name>gl_camera</name>
   <version>0.0.1</version>
-  <description>Provides a services to grab frames from existing ROS camera streams</description>
+  <description>Provides a service to grab frames from existing ROS 2 camera streams</description>
   <maintainer email="tim@groundlight.ai">Tim Huff</maintainer>
   <license>MIT</license>
 
