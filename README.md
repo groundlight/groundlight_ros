@@ -31,7 +31,7 @@ Make note of the topic where your robot is publishing camera frames. If you are 
 
 Now you're ready to try a minimal example with Groundlight ROS:
 1. Launch your robot according to the instructions provided in the ROS 2 package for your robot. If there is a separate launch file for your robot's camera, launch that too.
-2. Start the Groundlight action server: `ros2 launch gl_image_query groundlight.launch.py camera_topic:=<YOUR IMAGE TOPIC>`
+2. Start the Groundlight action server: `ros2 launch gl_image_query groundlight.launch.py camera_topic:=<YOUR CAMERA TOPIC>`
 3. Run the Groundlight ROS hello world program: `ros2 run gl_image_query hello_world`
 
 This will run a simple example that takes a picture from your robot's camera and asks the question "Is there a person in this picture?" At first, the response times will be slow because your model is new, but after submitting several image queries, your model will become more robust and return results more quickly.
