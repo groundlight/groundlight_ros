@@ -22,10 +22,10 @@ class HelloWorld(Node):
     def goal_response_callback(self, future):
         goal_handle = future.result()
         if not goal_handle.accepted:
-            self.get_logger().info('Goal rejected.')
+            self.get_logger().error('Goal rejected by Groundlight action server.')
             return
         else:
-            self.get_logger().info('Goal accepted.')
+            self.get_logger().info('Goal accepted by Groundlight action server.')
 
         self._get_result_future = goal_handle.get_result_async()
         self._get_result_future.add_done_callback(self.get_result_callback)
@@ -37,12 +37,6 @@ class HelloWorld(Node):
     def feedback_callback(self, feedback_msg):
         feedback = feedback_msg.feedback
         self.get_logger().info(f'Waiting for a confident answer. Provisional answer is {feedback.response.label} with a confidence of {feedback.response.confidence:.4f}.')
-    
-    def iq_msg_to_str(self, msg: ImageQuery) -> str:
-        return (
-            f'{msg.response.image_query_id} label={msg.response.label} '
-            f'confidence={msg.response.confidence:.4f} confidence_threshold={msg.params.confidence_threshold:.4f} '
-        )
 
 def main(args=None):
     rclpy.init(args=args)
