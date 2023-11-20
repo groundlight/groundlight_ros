@@ -25,25 +25,16 @@ On the system where you are running ROS, run: `export GROUNDLIGHT_API_TOKEN="<YO
 Some users prefer to put the token into their bashrc file so that it is always ready to be used. To do this, run: `echo 'export GROUNDLIGHT_API_TOKEN="<YOUR API TOKEN>"' >> ~/.bashrc && source ~/.bashrc`.
 
 ## Usage
-This library assumes that your robot already has a topic where camera frames are been published frequently and that the messages are of type `sensor_msgs/msg/Image`. If this is not case, you may need to create node to publish to such a topic.
+This library assumes that your robot already has a topic where camera frames are published frequently and that the messages are of type `sensor_msgs/Image`. If this is not case, you may need to create node to publish to such a topic.
 
 Make note of the topic where your robot is publishing camera frames. If you are unsure, start up your robot and run: `ros2 topic list`. Browse the topics and find the one that seems right. Verify the type by running `ros2 topic type <topic_name>`.
 
-Optionally, you can provide the coordinate frame (tf frame) from which your robot is capturing images. This can be useful for visualizing Groundlight image queries in RViz, but is not necessary for basic usage of Groundlight. 
-
 Now you're ready to try a minimal example with Groundlight ROS:
-1. Create a file `groundlight_example.py`
-2. Add the following...
-```
-class GroundlightExample:
-...
-```
-3. next...
+1. Launch your robot according to the instructions provided in the ROS 2 package for your robot. If there is a separate launch file for your robot's camera, launch that too.
+2. Start the Groundlight action server: `ros2 launch gl_image_query groundlight.launch.py camera_topic:=<YOUR IMAGE TOPIC>`
+3. Run the Groundlight ROS hello world program: `ros2 run gl_image_query hello_world`
 
-Groundlight image queries are handled by action server, and in their most basic usage, they are submitted by an action client as seen above. However, Groundlight also republishes requests, feedback and results to topics so that other interested nodes can subscribe. The relevant topics are:
-1. `/groundlight/requests`
-2. `/groundlight/feedback`
-3. `/groundlight/results`
+This will run a simple example that takes a picture from your robot's camera and asks the question "Is there a person in this picture?" At first, the response times will be slow because your model is new, but after submitting several image queries, your model will become more robust and return results more quickly.
 
 ## Sample Applications
 This library provides several sample applications of Groundlight being used with different robots. You can browse the `sample_applications` folder to get inspiration for how to use this library.
