@@ -1,5 +1,3 @@
-import time
-
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
@@ -48,38 +46,43 @@ def main(args=None):
         return
     
     node.get_logger().info('Groundlight ROS demo has started. Your robot will now take a picture and ask Groundlight if there is a person in the image.')
-    time.sleep(2)
-    countdown = 3
-    while countdown > 0:
-        node.get_logger().info(f'{countdown}...')
-        countdown -= 1
-        time.sleep(1)
+    
+    while True:
+        # Grab a frame 
+        future = node.grab_frame_client.call_async(node.frame_req)
+        rclpy.spin_until_future_complete(node, future)
+        image = future.result().image
 
-    # Grab a frame 
-    future = node.grab_frame_client.call_async(node.frame_req)
-    rclpy.spin_until_future_complete(node, future)
-    image = future.result().image
+        # Submit the image query to Groundlight
+        header = Header()
+        clock = rclpy.clock.Clock()
+        current_time = clock.now()
+        header.stamp = Time(sec=current_time.seconds_nanoseconds()[0], nanosec=current_time.seconds_nanoseconds()[1])
+        header.frame_id = 'camera_color_frame' # Optional: include the frame from which the image was taken. Used to generate RViz markers.
+        goal_msg = ImageQuery.Goal()
+        goal_msg.header = header
+        goal_msg.params.query = "Is there a person visible?"
+        goal_msg.params.name = "groundlight_ros_hello_world"
+        # goal_msg.params.detector_id = 'det_xxxxxxxxx' # Alternatively, you can refer to your detector by ID
+        goal_msg.params.patience_time = 30.0
+        goal_msg.params.confidence_threshold = .75
+        goal_msg.params.human_review = "DEFAULT"
+        goal_msg.image = image
 
-    # Submit the image query to Groundlight
-    header = Header()
-    clock = rclpy.clock.Clock()
-    current_time = clock.now()
-    header.stamp = Time(sec=current_time.seconds_nanoseconds()[0], nanosec=current_time.seconds_nanoseconds()[1])
-    header.frame_id = 'camera_color_frame' # Optional: include the frame from which the image was taken. Used to generate RViz markers.
-    goal_msg = ImageQuery.Goal()
-    goal_msg.header = header
-    goal_msg.params.query = "Is there a person visible?"
-    goal_msg.params.name = "groundlight_ros_hello_world"
-    # goal_msg.params.detector_id = 'det_xxxxxxxxx' # Alternatively, you can refer to your detector by ID
-    goal_msg.params.patience_time = 30.0
-    goal_msg.params.confidence_threshold = .75
-    goal_msg.params.human_review = "DEFAULT"
-    goal_msg.image = image
+        future = node._action_client.send_goal_async(goal_msg, feedback_callback=node.feedback_callback)
+        future.add_done_callback(node.goal_response_callback)
+        rclpy.spin_until_future_complete(node, future)
+        goal_handle = future.result()
 
-    node.future = node._action_client.send_goal_async(goal_msg, feedback_callback=node.feedback_callback)
-    node.future.add_done_callback(node.goal_response_callback)
+        if not goal_handle.accepted:
+            return
 
-    rclpy.spin(node)
+        result_future = goal_handle.get_result_async()
+        rclpy.spin_until_future_complete(node, result_future)
+
+        if input('Would you like submit another image query? (y/n) ') != 'y':
+            break
+    
     rclpy.shutdown()
 
 if __name__ == '__main__':
