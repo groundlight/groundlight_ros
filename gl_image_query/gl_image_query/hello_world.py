@@ -45,8 +45,6 @@ def main(args=None):
         rclpy.shutdown()
         return
     
-    node.get_logger().info('Groundlight ROS demo has started. Your robot will now take a picture and ask Groundlight if there is a person in the image.')
-    
     while True:
         # Grab a frame 
         future = node.grab_frame_client.call_async(node.frame_req)
@@ -69,6 +67,7 @@ def main(args=None):
         goal_msg.params.human_review = "DEFAULT"
         goal_msg.image = image
 
+        node.get_logger().info(f'Submitting image query to Groundlight: {goal_msg.params.query}')
         future = node._action_client.send_goal_async(goal_msg, feedback_callback=node.feedback_callback)
         future.add_done_callback(node.goal_response_callback)
         rclpy.spin_until_future_complete(node, future)
