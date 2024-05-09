@@ -1,0 +1,25 @@
+version: '3.8'
+services:
+  gl_turtlebot:
+    build: .
+    container_name: gl_turtlebot
+    image: gl_turtlebot
+    runtime: nvidia  # This is essential for using NVIDIA GPUs
+    environment:
+      - DISPLAY=${DISPLAY}
+      - NVIDIA_VISIBLE_DEVICES=all  # or specific GPUs like 0,1
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics,display  # This can be adjusted based on your needs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      # - .:/workspace/ros2_kortex_ws/src/ # gl_kinova demo
+      # - ../..:/workspace/ros2_kortex_ws/src/ # groundlight_ros
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    network_mode: host
+    privileged: true
+    command: tail -f /dev/null

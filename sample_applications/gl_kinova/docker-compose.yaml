@@ -2,6 +2,7 @@ version: '3.8'
 services:
   gl_kinova:
     build: .
+    container_name: gl_kinova
     image: gl_kinova
     environment:
       - DISPLAY=${DISPLAY}
