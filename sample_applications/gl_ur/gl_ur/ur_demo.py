@@ -51,7 +51,7 @@ class URDemo(Node):
                     detector_id: str = '', 
                     query: str = '', 
                     name: str = '', 
-                    patience_time: float = 0.0,
+                    wait: float = 0.0,
                     confidence_threshold: float = 0.0,
                     human_review: str = 'DEFAULT'):
         
@@ -66,7 +66,7 @@ class URDemo(Node):
         goal_msg.params.detector_id = detector_id
         goal_msg.params.query = query
         goal_msg.params.name = name
-        goal_msg.params.patience_time = patience_time
+        goal_msg.params.wait = wait
         goal_msg.params.confidence_threshold = confidence_threshold
         goal_msg.params.human_review = human_review
         goal_msg.image = image
@@ -138,7 +138,7 @@ def main(args=None):
     person_params = {
         'detector_id': 'det_2WgB8XzLLEq89cvPbwep1nhIOTL',
         'human_review': 'DEFAULT',
-        'patience_time': 60.0,
+        'wait': 60.0,
     }
 
 
@@ -154,7 +154,7 @@ def main(args=None):
     gear_params = {
         'detector_id': 'det_2WjC9cOGczrwBWzJE8wPfpDSriG',
         'human_review': 'DEFAULT',
-        'patience_time': 60.0,
+        'wait': 60.0,
     }
 
     bolts_pose = [
@@ -169,7 +169,7 @@ def main(args=None):
     bolts_params = {
         'detector_id': 'det_2SoJ3PDnpa3c4L5J9HnlEmWmfif',
         'human_review': 'DEFAULT',
-        'patience_time': 60.0,
+        'wait': 60.0,
     }
 
     base_plate_pose = [
@@ -184,7 +184,7 @@ def main(args=None):
     base_plate_params = {
         'detector_id': 'det_2XVOHkt6URk8B7oWthynNW3yc7X',
         'human_review': 'DEFAULT',
-        'patience_time': 60.0,
+        'wait': 60.0,
     }
 
 

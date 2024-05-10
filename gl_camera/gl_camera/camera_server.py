@@ -10,6 +10,7 @@ class CameraService(Node):
 
         self.declare_parameter('camera_topic', '')
         self.camera_topic = self.get_parameter('camera_topic').get_parameter_value().string_value
+        self.set_parameters([rclpy.parameter.Parameter('use_sim_time', rclpy.Parameter.Type.BOOL, True)])
 
         if not self.camera_topic:
             self.get_logger().warning(
@@ -18,7 +19,7 @@ class CameraService(Node):
                 "please provide a camera_topic argument."
                 )
             rclpy.shutdown()
-            exit(0)  # Optionally ensure the script is terminated
+            exit(0)
 
         self.get_logger().info(f'Listening to topic {self.camera_topic}...')
 

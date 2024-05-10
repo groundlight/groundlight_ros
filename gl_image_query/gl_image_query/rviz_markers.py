@@ -4,15 +4,22 @@ from rclpy.node import Node
 from visualization_msgs.msg import Marker
 from builtin_interfaces.msg import Duration
 
-from geometry_msgs.msg import PoseStamped, Point
+from geometry_msgs.msg import PoseStamped
 from tf2_ros import Buffer, TransformListener
+from tf2_ros import LookupException, ConnectivityException, ExtrapolationException
 
 from gl_interfaces.msg import ImageQueryRequest, ImageQueryFeedback, ImageQueryResult
 
-import time
+from math import pi
+from transformations import quaternion_about_axis, quaternion_multiply
 
-NON_FINAL_TRANSPARENCY = 0.2
+NON_FINAL_TRANSPARENCY = 0.3
 FINAL_TRANSPARENCY = 1.0
+
+def rotate_quaternion(quaternion, angle, axis):
+    """Rotate quaternion by a specific angle around an axis."""
+    rotation_quaternion = quaternion_about_axis(angle, axis)
+    return quaternion_multiply(rotation_quaternion, quaternion)
 
 class ImageQueryRVizMarkers(Node):
     def __init__(self):
@@ -20,6 +27,8 @@ class ImageQueryRVizMarkers(Node):
         Spawns RViz arrow markers for each image query that is received. Subscribes to feedback and result topics to update the markers.
         """
         super().__init__('groundlight_markers')
+
+        self.set_parameters([rclpy.parameter.Parameter('use_sim_time', rclpy.Parameter.Type.BOOL, True)])
 
         self.marker_publisher = self.create_publisher(Marker, '/groundlight/markers', 10)
 
@@ -59,28 +68,28 @@ class ImageQueryRVizMarkers(Node):
         self.get_logger().info('Groundlight RViz marker node has started.')
 
     def request_callback(self, msg: ImageQueryRequest):
-        if not msg.header.frame_id:
-            # If no frame_id is specified, we can't draw a marker
-            return 
+        # Attempt to get the pose at the time the image was captured
+        pose_stamped = self.get_pose(msg.header.frame_id, msg.header.stamp)
+        if pose_stamped is None:
+            self.get_logger().error('Could not determine pose for image query.')
+            return
 
-        # Create a marker for this new image query
         marker = Marker()
         marker.id = self.marker_counter
-        marker.header.frame_id = 'base_link' #msg.header.frame_id
+        marker.header.frame_id = 'map'
         marker.type = Marker.ARROW
         marker.action = Marker.ADD
+        marker.pose = pose_stamped.pose  # Use the transformed pose
 
-        marker.pose = self.get_pose(msg.header.frame_id).pose
-
-        marker.scale.x = 0.2
-        marker.scale.y = 0.03
-        marker.scale.z = 0.03
-        marker.lifetime = Duration(sec=0)  # 0 means never delete
+        marker.scale.x = 1.0
+        marker.scale.y = 0.2
+        marker.scale.z = 0.2
+        marker.color.a = NON_FINAL_TRANSPARENCY
+        marker.lifetime = Duration(sec=0)
 
         self.marker_counter += 1
-
-        iq_id = msg.response.image_query_id
-        self.iq_markers[iq_id] = marker
+        self.marker_publisher.publish(marker)
+        self.iq_markers[msg.response.image_query_id] = marker
 
     def feedback_callback(self, msg: ImageQueryFeedback):
         iq_id = msg.response.image_query_id
@@ -117,8 +126,6 @@ class ImageQueryRVizMarkers(Node):
         self.publish_marker(marker, color)
 
     def publish_marker(self, marker: Marker, color: tuple) -> None:
-        # marker.header.stamp = self.get_clock().now().to_msg()
-        
         marker.color.r = color[0]
         marker.color.g = color[1]
         marker.color.b = color[2]
@@ -126,17 +133,35 @@ class ImageQueryRVizMarkers(Node):
 
         self.marker_publisher.publish(marker)
 
-    def get_pose(self, source_frame: str, target_frame: str = 'base_link') -> PoseStamped:
-        transform = self.tf_buffer.lookup_transform(target_frame, source_frame, rclpy.time.Time())
+    def get_pose(self, source_frame: str, time_stamp=None, target_frame='map'):
+        if time_stamp is None:
+            time_stamp = self.get_clock().now().to_msg()
+
+        # Wait for up to 1 second for the transformation to become available
+        try:
+            transform = self.tf_buffer.lookup_transform(
+                target_frame, source_frame, time_stamp,
+                timeout=rclpy.duration.Duration(seconds=1))
+        except (LookupException, ConnectivityException, ExtrapolationException) as e:
+            self.get_logger().error(f'Failed to transform from {source_frame} to {target_frame}: {str(e)}')
+            return None
 
         pose_stamped = PoseStamped()
         pose_stamped.header = transform.header
-        pose_stamped.pose.position = Point(
-            x=transform.transform.translation.x,
-            y=transform.transform.translation.y,
-            z=transform.transform.translation.z
-        )
-        pose_stamped.pose.orientation = transform.transform.rotation
+        pose_stamped.pose.position.x = transform.transform.translation.x
+        pose_stamped.pose.position.y = transform.transform.translation.y
+        pose_stamped.pose.position.z = transform.transform.translation.z
+
+        # the pose seems to be off by 90 degrees for some reason, as a workaround, we'll just rotate it here
+        original_quat = [transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z, transform.transform.rotation.w] 
+        angle = - pi / 2  
+        axis = [0, 1, 0]  # Z-axis
+        rotated_quat = rotate_quaternion(original_quat, angle, axis)
+
+        pose_stamped.pose.orientation.x = rotated_quat[0]
+        pose_stamped.pose.orientation.y = rotated_quat[1]
+        pose_stamped.pose.orientation.z = rotated_quat[2]
+        pose_stamped.pose.orientation.w = rotated_quat[3]
 
         return pose_stamped
 

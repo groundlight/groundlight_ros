@@ -14,7 +14,7 @@ import time
 
 bridge = CvBridge()
 
-gl = Groundlight() # Connect to Groundlight
+gl = Groundlight()
 
 POLLING_PERIOD_SEC = .1
 
@@ -28,6 +28,9 @@ class IQActionServer(Node):
         Incoming requests, feedback and results are republished on separate topics so that other nodes can subscribe.
         """
         super().__init__('groundlight')
+        
+        self.set_parameters([rclpy.parameter.Parameter('use_sim_time', rclpy.Parameter.Type.BOOL, True)])
+
         self._action_server = ActionServer(
             self,
             ImageQuery,
@@ -42,7 +45,6 @@ class IQActionServer(Node):
         self.get_logger().info('Groundlight image query action server is online.')
 
     def execute_callback(self, goal_handle):
-        # Convert image message to OpenCV format
         cv_image = bridge.imgmsg_to_cv2(goal_handle.request.image, desired_encoding='bgr8')
 
         # Get detector
@@ -63,14 +65,14 @@ class IQActionServer(Node):
         # Assign default values as needed
         # ROS messages do not support the notion of default values. For example, if a user does not provide a 
         # value for a float field, the value will be set to 0.0. Because of this, we need to assign defaults here.
-        patience_time = 30.0 if goal_handle.request.params.patience_time == 0.0 else goal_handle.request.params.patience_time
+        wait = 30.0 if goal_handle.request.params.wait == 0.0 else goal_handle.request.params.wait
         confidence_threshold = det.confidence_threshold if goal_handle.request.params.confidence_threshold == 0.0 else goal_handle.request.params.confidence_threshold
         human_review = 'DEFAULT' if goal_handle.request.params.human_review == '' else goal_handle.request.params.human_review
 
         # Submit image query
         iq = gl.ask_async(det, 
                           image=cv_image, 
-                          patience_time=patience_time,
+                        #   wait=wait,
                           confidence_threshold=confidence_threshold,
                           human_review=human_review)
         self.get_logger().info(f'Processing image query: {iq.query}')
@@ -79,7 +81,7 @@ class IQActionServer(Node):
         params.detector_id = det.id
         params.query = det.query
         params.name = det.name
-        params.patience_time = patience_time
+        params.wait = wait
         params.confidence_threshold = confidence_threshold
         params.human_review = human_review
 
@@ -131,7 +133,7 @@ class IQActionServer(Node):
             # Check if answer is final
             answer_is_final = confidence is None or \
                               confidence >= confidence_threshold or \
-                              time_waited_sec > patience_time
+                              time_waited_sec > wait
             
             if answer_is_final:
                 goal_handle.succeed()
