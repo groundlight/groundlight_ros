@@ -160,6 +160,7 @@ def main(args=None):
 
         for goal_func, params in goals:
             result = goal_func(*params)
+            node.get_logger().info(f'Result: {result}')
 
     node.destroy_node()
     rclpy.shutdown()

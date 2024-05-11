@@ -1,8 +1,8 @@
 import rclpy
 from rclpy.node import Node
 
-from visualization_msgs.msg import Marker
-from builtin_interfaces.msg import Duration
+from interactive_markers.interactive_marker_server import InteractiveMarkerServer
+from visualization_msgs.msg import InteractiveMarker, InteractiveMarkerControl, InteractiveMarkerFeedback, Marker
 
 from geometry_msgs.msg import PoseStamped
 from tf2_ros import Buffer, TransformListener
@@ -12,6 +12,14 @@ from gl_interfaces.msg import ImageQueryRequest, ImageQueryFeedback, ImageQueryR
 
 from math import pi
 from transformations import quaternion_about_axis, quaternion_multiply
+
+import tkinter as tk
+
+from sensor_msgs.msg import Image as ROSImage
+from PIL import Image as PILImage
+from PIL import ImageTk
+import cv2
+from cv_bridge import CvBridge
 
 NON_FINAL_TRANSPARENCY = 0.3
 FINAL_TRANSPARENCY = 1.0
@@ -23,14 +31,11 @@ def rotate_quaternion(quaternion, angle, axis):
 
 class ImageQueryRVizMarkers(Node):
     def __init__(self):
-        """
-        Spawns RViz arrow markers for each image query that is received. Subscribes to feedback and result topics to update the markers.
-        """
         super().__init__('groundlight_markers')
-
         self.set_parameters([rclpy.parameter.Parameter('use_sim_time', rclpy.Parameter.Type.BOOL, True)])
 
-        self.marker_publisher = self.create_publisher(Marker, '/groundlight/markers', 10)
+        self.marker_server = InteractiveMarkerServer(self, 'interactive_groundlight_markers')
+        self.marker_counter = 0
 
         self.request_sub = self.create_subscription(
             ImageQueryRequest,
@@ -53,85 +58,161 @@ class ImageQueryRVizMarkers(Node):
             10
         )
 
-        self.iq_markers = {}
-        self.marker_counter = 0
+        self.iq_to_marker_map = {}
+        self.iq_results = {}
 
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
-        # Delete any existing markers in RViz to start with a blank slate
-        marker = Marker()
-        marker.header.frame_id = 'base_link' # This seems to be required for the DELETEALL action to work
-        marker.action = Marker.DELETEALL
-        self.marker_publisher.publish(marker)
+        # Initialize the Tkinter main window and then withdraw it, we will only display popups, no main window
+        self.root = tk.Tk()
+        self.root.withdraw()
 
         self.get_logger().info('Groundlight RViz marker node has started.')
 
+    def ros_image_to_pil(self, image_msg: ROSImage, new_width=640) -> PILImage:
+        """Convert a ROS2 image message to a PIL Image.
+        """
+        bridge = CvBridge()
+
+        cv_image = bridge.imgmsg_to_cv2(image_msg, desired_encoding='passthrough')
+
+        if 'rgb8' in image_msg.encoding:
+            pil_image = PILImage.fromarray(cv_image, 'RGB')
+        elif 'bgr8' in image_msg.encoding:
+            cv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
+            pil_image = PILImage.fromarray(cv_image, 'RGB')
+        else:
+            pil_image = PILImage.fromarray(cv_image, 'L')
+
+        # Calculate the new height to maintain the aspect ratio
+        width_percent = (new_width / float(pil_image.size[0]))
+        new_height = int((float(pil_image.size[1]) * float(width_percent)))
+
+        # Resize the image using ANTIALIAS filter for high quality
+        resized_image = pil_image.resize((new_width, new_height), PILImage.ANTIALIAS)
+
+        return resized_image
+
+    def create_interactive_marker(self, pose_stamped, marker_id, transparency, image_query_request):
+        int_marker = InteractiveMarker()
+        int_marker.header.frame_id = pose_stamped.header.frame_id
+        int_marker.pose = pose_stamped.pose
+        int_marker.name = f"marker_{marker_id}"
+
+        # store the values from the image query request so that we can present them in the popup
+        self.iq_results[int_marker.name] = {
+            'iq_id': image_query_request.response.image_query_id,
+            'image': self.ros_image_to_pil(image_query_request.image),
+            'query': image_query_request.params.query,
+        }
+
+        print(self.iq_results)
+
+        # Create the marker itself
+        marker = Marker()
+        marker.type = Marker.ARROW
+        marker.scale.x = 1.0
+        marker.scale.y = 0.2
+        marker.scale.z = 0.2
+        marker.color.a = transparency
+
+        # Create a non-interactive control which contains the marker
+        box_control = InteractiveMarkerControl()
+        box_control.always_visible = True
+        box_control.markers.append(marker)
+        box_control.interaction_mode = InteractiveMarkerControl.BUTTON
+
+        int_marker.controls.append(box_control)
+
+        # Add the interactive marker to our collection and to the server
+        self.marker_server.insert(int_marker, feedback_callback=self.on_click)
+
+        self.marker_server.applyChanges()
+        return int_marker
+
+    def on_click(self, feedback):
+        if feedback.event_type == InteractiveMarkerFeedback.BUTTON_CLICK:
+            self.get_logger().info(f'Marker {feedback.marker_name} clicked at position ({feedback.pose.position.x}, {feedback.pose.position.y}, {feedback.pose.position.z})')
+
+            iq_id = self.iq_results[feedback.marker_name]['iq_id']
+            query = self.iq_results[feedback.marker_name]['query']
+            image = self.iq_results[feedback.marker_name]['image']
+            self.launch_popup(iq_id, query, image)
+
+    def launch_popup(self, iq_id: str, query: str, image) -> None:
+
+        # Create a new top-level window
+        popup = tk.Toplevel()
+        popup.title("Image Query Information")
+
+        text = f'Image query ID: {iq_id}'
+        iq_id_label = tk.Label(popup, text=text)
+        iq_id_label.pack()
+
+        query_label = tk.Label(popup, text=query)
+        query_label.pack()
+
+        tk_image = ImageTk.PhotoImage(image)
+        label = tk.Label(popup, image=tk_image)
+        label.image = tk_image 
+        label.pack()
+
+
     def request_callback(self, msg: ImageQueryRequest):
-        # Attempt to get the pose at the time the image was captured
         pose_stamped = self.get_pose(msg.header.frame_id, msg.header.stamp)
         if pose_stamped is None:
             self.get_logger().error('Could not determine pose for image query.')
             return
 
-        marker = Marker()
-        marker.id = self.marker_counter
-        marker.header.frame_id = 'map'
-        marker.type = Marker.ARROW
-        marker.action = Marker.ADD
-        marker.pose = pose_stamped.pose  # Use the transformed pose
-
-        marker.scale.x = 1.0
-        marker.scale.y = 0.2
-        marker.scale.z = 0.2
-        marker.color.a = NON_FINAL_TRANSPARENCY
-        marker.lifetime = Duration(sec=0)
+        int_marker = self.create_interactive_marker(pose_stamped=pose_stamped, 
+                                                    marker_id=self.marker_counter, 
+                                                    transparency=NON_FINAL_TRANSPARENCY,
+                                                    image_query_request=msg)
+        self.iq_to_marker_map[msg.response.image_query_id] = int_marker
 
         self.marker_counter += 1
-        self.marker_publisher.publish(marker)
-        self.iq_markers[msg.response.image_query_id] = marker
 
     def feedback_callback(self, msg: ImageQueryFeedback):
         iq_id = msg.response.image_query_id
-        marker = self.iq_markers.get(iq_id)
-        if marker is None:
-            return # Got a callback for a marker we aren't tracking
+        int_marker = self.iq_to_marker_map.get(iq_id)
+        if int_marker is None:
+            return # No marker found
+        
 
-        # Determine marker color
+        # Update the marker color based on feedback
+        color = (1.0, 0.0, 0.0, NON_FINAL_TRANSPARENCY)  # Default to red
         if msg.response.label == 'YES':
             color = (0.0, 1.0, 0.0, NON_FINAL_TRANSPARENCY)
         elif msg.response.label == 'NO':
             color = (1.0, 0.0, 0.0, NON_FINAL_TRANSPARENCY)
-        else:
-            color = (1.0, 1.0, 0.0, NON_FINAL_TRANSPARENCY)
 
-        self.publish_marker(marker, color)
+        for control in int_marker.controls:
+            for marker in control.markers:
+                marker.color.r, marker.color.g, marker.color.b, marker.color.a = color
+        
+        self.marker_server.insert(int_marker, feedback_callback=self.on_click)
+        self.marker_server.applyChanges()
 
     def result_callback(self, msg: ImageQueryResult):
         iq_id = msg.response.image_query_id
-        marker = self.iq_markers.get(iq_id)
-        if marker is None:
-            return # Got a callback for a marker we aren't tracking
+        int_marker = self.iq_to_marker_map.get(iq_id)
+        if int_marker is None:
+            return # No marker found
 
-        # Determine marker color
-        if msg.response.confidence < msg.params.confidence_threshold:
-            color = (1.0, 1.0, 0.0, FINAL_TRANSPARENCY)
-        elif msg.response.label == 'YES':
+        # Final update to marker color
+        color = (1.0, 1.0, 0.0, FINAL_TRANSPARENCY)  # Default to yellow
+        if msg.response.label == 'YES':
             color = (0.0, 1.0, 0.0, FINAL_TRANSPARENCY)
         elif msg.response.label == 'NO':
             color = (1.0, 0.0, 0.0, FINAL_TRANSPARENCY)
-        else:
-            color = (1.0, 1.0, 0.0, FINAL_TRANSPARENCY)
 
-        self.publish_marker(marker, color)
+        for control in int_marker.controls:
+            for marker in control.markers:
+                marker.color.r, marker.color.g, marker.color.b, marker.color.a = color
 
-    def publish_marker(self, marker: Marker, color: tuple) -> None:
-        marker.color.r = color[0]
-        marker.color.g = color[1]
-        marker.color.b = color[2]
-        marker.color.a = color[3]
-
-        self.marker_publisher.publish(marker)
+        self.marker_server.insert(int_marker, feedback_callback=self.on_click)
+        self.marker_server.applyChanges()
 
     def get_pose(self, source_frame: str, time_stamp=None, target_frame='map'):
         if time_stamp is None:
@@ -168,7 +249,13 @@ class ImageQueryRVizMarkers(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = ImageQueryRVizMarkers()
-    rclpy.spin(node)
+
+    while rclpy.ok():
+        rclpy.spin_once(node, timeout_sec=0)
+        node.root.update_idletasks()
+        node.root.update()
+
+    node.destroy_node()
     rclpy.shutdown()
 
 if __name__ == '__main__':
