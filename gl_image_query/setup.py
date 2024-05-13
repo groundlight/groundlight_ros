@@ -26,6 +26,7 @@ setup(
             'action_server = gl_image_query.action_server:main',
             'rviz_markers = gl_image_query.rviz_markers:main',
             'hello_world = gl_image_query.hello_world:main',
+            'webcam_example = gl_image_query.webcam_example:main',
         ],
     },
 )

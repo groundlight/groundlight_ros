@@ -110,7 +110,7 @@ class IQActionServer(Node):
         feedback_msg.response = response
 
         # Poll image query until answer is final
-        time_waited_sec = 0.0
+        t1 = time.time()
         while True:
             # Get the image query
             iq = gl.get_image_query(iq.id)
@@ -131,9 +131,10 @@ class IQActionServer(Node):
             self.feedback_pub.publish(feedback_msg)
 
             # Check if answer is final
+            time_waited_so_far = time.time() - t1
             answer_is_final = confidence is None or \
                               confidence >= confidence_threshold or \
-                              time_waited_sec > wait
+                              time_waited_so_far > wait
             
             if answer_is_final:
                 goal_handle.succeed()
@@ -146,7 +147,6 @@ class IQActionServer(Node):
                 break
             else:
                 time.sleep(POLLING_PERIOD_SEC)
-                time_waited_sec += POLLING_PERIOD_SEC
         
         # Polling has concluded, time to publish the final result message
         result_msg = ImageQueryResult()

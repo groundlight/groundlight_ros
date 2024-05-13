@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'camera_server = gl_camera.camera_server:main',
+            'webcam = gl_camera.webcam:main',
         ],
     },
 )
