@@ -1,30 +1,31 @@
 from setuptools import find_packages, setup
 import os
-from glob import glob
 
-package_name = 'gl_image_query'
+package_name = 'gl_webcam'
 
 setup(
     name=package_name,
-    version='0.0.1',
+    version='0.1.0',
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        (os.path.join('share', package_name), glob('launch/*.launch.py')),
+        (f'share/{package_name}/launch', 
+         [os.path.join('launch', file) for file in os.listdir('launch') if file.endswith('.py')]),
+        (f'share/{package_name}/config', 
+         [os.path.join('config', file) for file in os.listdir('config')]),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='Tim Huff',
+    maintainer='tim',
     maintainer_email='tim@groundlight.ai',
-    description='Perform natural language image queries with Groundlight',
+    description='A simple example of using groundlight_ros with a webcam.',
     license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'action_server = gl_image_query.action_server:main',
-            'rviz_markers = gl_image_query.rviz_markers:main',
+            'demo = gl_webcam.demo:main'
         ],
     },
 )

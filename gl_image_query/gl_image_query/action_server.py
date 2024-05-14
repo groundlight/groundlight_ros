@@ -54,6 +54,8 @@ class IQActionServer(Node):
             det = gl.get_or_create_detector(
                 name=goal_handle.request.params.name, 
                 query=goal_handle.request.params.query, 
+                confidence_threshold=user_input
+
                 )
         else:
             self.get_logger().error(
@@ -72,7 +74,6 @@ class IQActionServer(Node):
         # Submit image query
         iq = gl.ask_async(det, 
                           image=cv_image, 
-                        #   wait=wait,
                           confidence_threshold=confidence_threshold,
                           human_review=human_review)
         self.get_logger().info(f'Processing image query: {iq.query}')

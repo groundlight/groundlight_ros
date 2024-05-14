@@ -9,7 +9,7 @@ class WebcamPublisher(Node):
         super().__init__('web_cam', namespace='groundlight')
         self.publisher = self.create_publisher(Image, 'webcam_frames', 10)
         
-        self.timer_period = 0.1  # seconds
+        self.timer_period = 1 / 30  # seconds
         self.timer = self.create_timer(self.timer_period, self.timer_callback)
         self.cap = cv2.VideoCapture(0)
         self.br = CvBridge()
