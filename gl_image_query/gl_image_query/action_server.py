@@ -27,7 +27,7 @@ class IQActionServer(Node):
 
         Incoming requests, feedback and results are republished on separate topics so that other nodes can subscribe.
         """
-        super().__init__('groundlight')
+        super().__init__('action_server', namespace='groundlight')
         
         self.set_parameters([rclpy.parameter.Parameter('use_sim_time', rclpy.Parameter.Type.BOOL, True)])
 
@@ -54,8 +54,6 @@ class IQActionServer(Node):
             det = gl.get_or_create_detector(
                 name=goal_handle.request.params.name, 
                 query=goal_handle.request.params.query, 
-                confidence_threshold=user_input
-
                 )
         else:
             self.get_logger().error(
@@ -143,7 +141,6 @@ class IQActionServer(Node):
                 result.header = goal_handle.request.header
                 result.params = params
                 result.response = response
-                result.image = goal_handle.request.image
                 self.get_logger().info(f'Result: {self.iq_msg_to_str(result)}')
                 break
             else:
@@ -162,8 +159,8 @@ class IQActionServer(Node):
     
     def iq_msg_to_str(self, msg: Union[ImageQueryRequest, ImageQueryFeedback, ImageQueryResult]) -> str:
         return (
-            f'{msg.response.image_query_id} label={msg.response.label} '
-            f'confidence={msg.response.confidence:.4f} confidence_threshold={msg.params.confidence_threshold:.4f} '
+            f'label={msg.response.label} confidence={msg.response.confidence:.4f} '
+            f'confidence_threshold={msg.params.confidence_threshold:.4f} id={msg.response.image_query_id}'
         )
 
 def main(args=None):

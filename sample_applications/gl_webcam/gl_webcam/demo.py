@@ -88,7 +88,8 @@ def main(args=None):
         goal_msg.params.name = f"groundlight_ros_demo_{node.start_time}"
         goal_msg.params.wait = 30.0
         goal_msg.params.human_review = "DEFAULT"
-        
+        goal_msg.params.confidence_threshold = 0.6
+
         goal_msg.image = image
 
         node.get_logger().info(

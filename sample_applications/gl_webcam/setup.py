@@ -15,6 +15,8 @@ setup(
          [os.path.join('launch', file) for file in os.listdir('launch') if file.endswith('.py')]),
         (f'share/{package_name}/config', 
          [os.path.join('config', file) for file in os.listdir('config')]),
+        (f'share/{package_name}/urdf', 
+        [os.path.join('urdf', file) for file in os.listdir('urdf')]),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -25,7 +27,10 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'demo = gl_webcam.demo:main'
+            'demo = gl_webcam.demo:main',
+            'joint_publisher = gl_webcam.joint_publisher:main',
+            'frustum_publisher = gl_webcam.frustum_publisher:main',
+            'image_drawer = gl_webcam.image_drawer:main',
         ],
     },
 )
