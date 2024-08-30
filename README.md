@@ -1,8 +1,16 @@
 # Groundlight ROS
 
-Groundlight ROS makes it simple to integrate reliable visual applications into any robot with ROS 2. Your robot can ask questions about images and get timely, high-confidence answers. This can be useful for performing inspections or improving the decision making abilities of your robot. 
+Groundlight ROS makes it simple to integrate reliable visual applications into any robot with ROS 2. Your robot can ask questions about images and get timely, reliable answers. This can be useful for performing inspections or improving the decision making abilities of your robot. 
 
-To learn more about Groundlight, check out our website: https://www.groundlight.ai/
+To learn more about Groundlight, visit our website: https://www.groundlight.ai/
+
+## How does it work?
+
+You simple ask binary (Yes/No) questions in natural language. Groundlight will automatically build a CV model to answer your question, based on the images you provide.  If the CV model is confident, you will get a quick response. If the model is unsure, it will escalate the image-query to a human monitor who will review the image and answer your question in real time (typically under a minute).  In this way you can always get reliable answers, even without a pre-existing training data set.
+
+Also, every human answer (whether it's from you or a Groundlight Cloud Labeler) is added to a dataset used to train the CV model.  This means your model quickly "learns on the job" and will continue to improve in speed and accuracy over time.
+
+If your question is unclear or ambiguous, the Cloud Labelers might not be able to answer your question.  In this case the image-query will be further escalated back to you, and show up as a "Flagged" image-query on your Dashboard.  It's important to answer Flagged image-queries, because otherwise the system will not know how to handle edge cases, which always come up in the real world.
 
 ## Requirements
 This library requires ROS 2 Humble. If you don't already it, first [install ROS2 Humble](https://docs.ros.org/en/humble/Installation.html).
@@ -11,12 +19,12 @@ This library requires ROS 2 Humble. If you don't already it, first [install ROS2
 If this is your first time using ROS, we recommend that you check out some of the [basic ROS tutorials](https://docs.ros.org/en/humble/Tutorials.html) before proceeding.
 
 Once you have your ROS workspace configured, follow these steps:
-1. Clone this repo into the src folder of your ROS 2 workspace: `git clone git@github.com:groundlight/groundlight_ros.git /path/to/your/workspace/src`.
+1. Clone this repo into the src folder of your ROS 2 workspace: `git clone https://github.com/groundlight/groundlight_ros /path/to/your/workspace/src`.
 2. From the root directory of your workspace, run: `colcon build`.
 3. Source your installation of ROS 2. Again from the root directory of your workspace, run: `source install/setup.bash`.
 
 ## Authentication
-To use Groundlight ROS, you must be authenticated with Groundlight. If you don't already have a Groundlight account, you can [register here](https://www.groundlight.ai/Signup). 
+To use Groundlight ROS, you must have a Groundlight account. If you don't already have a Groundlight account, you can [register for a free account here](https://dashboard.groundlight.ai/). 
 
 Next, you need to obtain an API token. Log into your Groundlight account, go to the [Api Tokens](https://app.groundlight.ai/reef/my-account/api-tokens) page and generate a token. You can read [more about API tokens](https://code.groundlight.ai/python-sdk/docs/getting-started/api-tokens) on our site.
 
