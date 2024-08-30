@@ -32,7 +32,7 @@ On the system where you are running ROS, run: `export GROUNDLIGHT_API_TOKEN="<YO
 
 Some users prefer to put the token into their bashrc file so that it is always ready to be used. To do this, run: `echo 'export GROUNDLIGHT_API_TOKEN="<YOUR API TOKEN>"' >> ~/.bashrc && source ~/.bashrc`.
 
-# A Simple Demo
+## A Simple Demo
 To try a minimal example with Groundlight ROS on your laptop, you can run: `ros2 launch gl_webcam bringup.launch.py` to launch the demo application, and then `ros2 run gl_webcam webcam_example --ros-args -p query:="Is the person giving a thumbs up?"` to ask a question. Feel free to adjust the query to whatever you like. 
 
 This sample application will create a brand-new Groundlight detector for you. Therefore, the response times will be slow at first. After submitting several image queries, your model will become more robust and return results much more quickly.
