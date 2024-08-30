@@ -32,18 +32,16 @@ On the system where you are running ROS, run: `export GROUNDLIGHT_API_TOKEN="<YO
 
 Some users prefer to put the token into their bashrc file so that it is always ready to be used. To do this, run: `echo 'export GROUNDLIGHT_API_TOKEN="<YOUR API TOKEN>"' >> ~/.bashrc && source ~/.bashrc`.
 
+# A Simple Demo
+To try a minimal example with Groundlight ROS on your laptop, you can run: `ros2 launch gl_webcam bringup.launch.py` to launch the demo application, and then `ros2 run gl_webcam webcam_example --ros-args -p query:="Is the person giving a thumbs up?"` to ask a question. Feel free to adjust the query to whatever you like. 
+
+This sample application will create a brand-new Groundlight detector for you. Therefore, the response times will be slow at first. After submitting several image queries, your model will become more robust and return results much more quickly.
+
 ## Usage
 This library assumes that your robot already has a topic where camera frames are published frequently and that the messages are of type `sensor_msgs/Image`. If this is not case, you may need to create a node to publish to such a topic.
 
-Make note of the topic where your robot is publishing camera frames. If you are unsure, start up your robot and run: `ros2 topic list`. Browse the topics and find the one that seems right. Verify the type by running `ros2 topic type <topic_name>`.
+Make note of the topic where your robot is publishing camera frames. If you are unsure, start up your robot and run: `ros2 topic list`. Browse the topics and find the one that seems right. Verify the type by running `ros2 topic type <YOUR CAMERA TOPIC>`.
 
-Now you're ready to try a minimal example with Groundlight ROS:
-1. Launch your robot according to the instructions provided in the ROS 2 package for your robot. If there is a separate launch file for your robot's camera, launch that too.
-2. Start the Groundlight action server: `ros2 launch gl_image_query groundlight.launch.py camera_topic:=<YOUR CAMERA TOPIC>`
-3. Run the Groundlight ROS hello world program: `ros2 run gl_image_query hello_world`
+To launch the Groundlight Image Query Action Server, run: `ros2 launch gl_image_query groundlight.launch.py camera_topic:=/<YOUR CAMERA TOPIC>`.
 
-This will run a simple example that takes a picture from your robot's camera and asks the question "Is there a person in this picture?" At first, the response times will be slow because your model is new, but after submitting several image queries, your model will become more robust and return results more quickly.
-
-## Sample Applications
-This library provides several sample applications of Groundlight being used with different robots. You can browse the `sample_applications` folder to get inspiration for how to use this library.
-
+To see some examples of how to submit a Groundlight Image Query in ROS2, you can browse some of our [Sample Applications](https://github.com/groundlight/groundlight_ros/tree/main/sample_applications).
